@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TaskBoardEnhancer
 // @namespace    http://roqvist.com
-// @version      0.4
+// @version      0.5
 // @description  Marks blocked nodes with a beautiful red background color, hide blocked but allows change on hoover. Selector for hiding work items of specific states
 // @author       Robert, Dan
 // @match        https://salome.meridium.se/tfs/*
@@ -58,9 +58,11 @@ function addToolbar(){
     var toolbarRow = $("div.hub-pivot");
     var views = toolbarRow.find(".views");
     var hideOption=localStorage.getItem("mw_hide_option");
+    var hideShowOption = localStorage.getItem("mw_hideShow_option");
     
-    views.after("<div class=\"mw-toolbar\"><div>Hide <select id=\"hide_option\">"+renderOption("None",hideOption)+renderOption("Done",hideOption)+renderOption("Reviewed,Done",hideOption)+"</select></div></div>");
+    views.after("<div class=\"mw-toolbar\"><div><select id=\"hideShow_option\">"+renderOption("Hide",hideShowOption)+renderOption("Show",hideShowOption)+"</select>:<select id=\"hide_option\">"+renderOption("None",hideOption)+renderOption("Done",hideOption)+renderOption("Reviewed,Done",hideOption)+"</select></div></div>");
     $("select#hide_option").change(updateHide);
+    $("select#hideShow_option").change(updateHide);
 }
 function renderOption(name, currentValue){
     var attributes="";
@@ -69,20 +71,23 @@ function renderOption(name, currentValue){
     return "<option"+attributes+">"+name+"</option>";
 }
 function updateHide(){
-    var val =$("select#hide_option option:selected").val();
-    localStorage.setItem("mw_hide_option",val);
-    switch(val.toLowerCase()){
+    var hideOption =$("select#hide_option option:selected").val();
+    var hideShowOption =$("select#hideShow_option option:selected").val();
+    localStorage.setItem("mw_hide_option",hideOption);
+    localStorage.setItem("mw_hideShow_option",hideShowOption);
+    var show=hideShowOption.toLowerCase()=="show";
+    switch(hideOption.toLowerCase()){
         case "none":
-            setHidden(null,false);
+            setHidden(null,show);
             break;
         case "reviewed,done":
-            setHidden(null,false);
-            setHidden("ReviewedAndTested",true);
-            setHidden("done",true);
+            setHidden(null,show);
+            setHidden("ReviewedAndTested",!show);
+            setHidden("done",!show);
             break;
         case "done":
-            setHidden(null,false);
-            setHidden("done",true);
+            setHidden(null,show);
+            setHidden("done",!show);
             break;
     }
 }
