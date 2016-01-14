@@ -4,7 +4,7 @@
 // @version      0.6
 // @description  Marks blocked nodes with a beautiful red background color, hide blocked but allows change on hoover. Selector for hiding work items of specific states
 // @author       Robert, Dan
-// @match        https://salome.meridium.se/tfs/*
+// @match        https://*/tfs/*
 // @grant        none
 // ==/UserScript==
 
