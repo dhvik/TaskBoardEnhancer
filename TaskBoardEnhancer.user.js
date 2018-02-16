@@ -1,10 +1,11 @@
-// ==UserScript==
+﻿// ==UserScript==
 // @name         TaskBoardEnhancer
 // @namespace    http://roqvist.com
-// @version      0.7
+// @version      0.8
 // @description  Marks blocked nodes with a beautiful red background color, hide blocked but allows change on hoover. Selector for hiding work items of specific states
 // @author       Robert, Dan
 // @match        https://*/tfs/*
+// @match        https://*.visualstudio.com/*
 // @grant        none
 // ==/UserScript==
 
@@ -83,6 +84,7 @@ function updateHide(){
         case "reviewed,done":
             setHidden(null,show);
             setHidden("ReviewedAndTested",!show);
+            setHidden("Ready for Test",!show);
             setHidden("done",!show);
             break;
         case "done":
@@ -92,11 +94,15 @@ function updateHide(){
     }
 }
 function setHidden(state, hidden){
+    $("tr.taskboard-row-summary").css("display",hidden?"none":"");
     $(".parentTbTile .additional-field[field='System.State'] div.field-inner-element").each(function(j){
         var s = $(this).text();
         if(state==null||state.toLowerCase() == s.toLowerCase()) {
             var trContent = $(this).closest("tr");
-            var trSummary= trContent.next();
+            var contentId=trContent.attr("id");
+            var id = contentId.substr(contentId.lastIndexOf("-")+1);
+            var summaryId="taskboard-summary-row-"+contentId;
+            var trSummary=$("tr#"+summaryId);
             trContent.css("display",hidden?"none":"");
             trSummary.css("display","none");
         }
