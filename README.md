@@ -4,7 +4,7 @@ TamperMonkey script for TFS 2015 that provides extra functionality for the Task 
 * Filter function in TaskBoard
 * Blocked tasks are displayed in red
 
-##Installation
+## Installation
 Import the script in TamperMonkey using the following url
 <https://raw.githubusercontent.com/dhvik/TaskBoardEnhancer/master/TaskBoardEnhancer.user.js>
 
