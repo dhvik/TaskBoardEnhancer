@@ -158,6 +158,7 @@ function Runner () {
                 $elementToChange.css('color', '#FFF');
                 $elementToChange.find('.clickable-title').css('color', '#FFF');
                 $elementToChange.find('.identity-picker-resolved-name').css('color', '#FFF');
+                $elementToChange.find('.effort').css('color', '#FFF');
             }
         });
     });
