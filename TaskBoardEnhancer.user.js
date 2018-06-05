@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         TaskBoardEnhancer
 // @namespace    http://roqvist.com
-// @version      0.8
+// @version      0.9
 // @description  Marks blocked nodes with a beautiful red background color, hide blocked but allows change on hoover. Selector for hiding work items of specific states
 // @author       Robert, Dan
 // @match        https://*/tfs/*
@@ -45,10 +45,15 @@ observer = new MutationObserver(function(mutations, observer) {
 function isTaskBoard(){
     return $("#taskboard").length;
 }
+
+function isAgileBoard() {
+    return $(".agile-board").length;
+}
+
 // animate after a few seconds, slow ass rendering...
 $(document).ready(function() {
     //only do this on the taskboard
-    if(isTaskBoard()){
+    if(isTaskBoard() || isAgileBoard()){
         setTimeout(Setup, 1500);
         addToolbar();
     }
@@ -138,6 +143,22 @@ function Runner () {
         });
         $(this).find("[field='Microsoft.VSTS.CMMI.Blocked']").each(function(j){
             //$(this).hide();
+        });
+    });
+
+    // colorize tags ending with "main"
+    var boardTiles = $(".board-tile-content").each(function(i) {
+        var $elementToChange = $(this);
+        $(this).find("span.tag-box").each(function (j) {
+            if($(this).text().endsWith(" main")) {
+                $elementToChange.css('background', 'radial-gradient(circle closest-side at 60% 43%, #b03 26%, rgba(187,0,51,0) 27%), radial-gradient(circle closest-side at 40% 43%, #b03 26%, rgba(187,0,51,0) 27%), radial-gradient(circle closest-side at 40% 22%, #d35 45%, rgba(221,51,85,0) 46%), radial-gradient(circle closest-side at 60% 22%, #d35 45%, rgba(221,51,85,0) 46%), radial-gradient(circle closest-side at 50% 35%, #d35 30%, rgba(221,51,85,0) 31%), radial-gradient(circle closest-side at 60% 43%, #b03 26%, rgba(187,0,51,0) 27%) 50px 50px, radial-gradient(circle closest-side at 40% 43%, #b03 26%, rgba(187,0,51,0) 27%) 50px 50px, radial-gradient(circle closest-side at 40% 22%, #d35 45%, rgba(221,51,85,0) 46%) 50px 50px, radial-gradient(circle closest-side at 60% 22%, #d35 45%, rgba(221,51,85,0) 46%) 50px 50px, radial-gradient(circle closest-side at 50% 35%, #d35 30%, rgba(221,51,85,0) 31%) 50px 50px').css('background-color', '#b03').css('background-size', '100px 100px');
+                $elementToChange.css('-webkit-transition', 'background 0.5s').css('-moz-transition', 'background 0.5s').css('-o-transition', 'background 0.5s').css('transition', 'background 0.5s');
+
+                // white text
+                $elementToChange.css('color', '#FFF');
+                $elementToChange.find('.clickable-title').css('color', '#FFF');
+                $elementToChange.find('.identity-picker-resolved-name').css('color', '#FFF');
+            }
         });
     });
 
