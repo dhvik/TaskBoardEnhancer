@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         TaskBoardEnhancer
 // @namespace    http://roqvist.com
-// @version      1.2
+// @version      1.2.1
 // @description  Marks blocked nodes with a beautiful red background color, hide blocked but allows change on hoover. Selector for hiding work items of specific states
 // @author       Robert, Dan
 // @match        https://*/tfs/*
@@ -66,6 +66,7 @@ function init(){
         addToolbar();
         initDone=true;
     } else if(isDevOpsSprint()){
+        setTimeout(Setup, 1500);
         addToolbarDevOps();
         initDone=true;
     }
