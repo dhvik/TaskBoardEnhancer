@@ -1,16 +1,18 @@
 ﻿// ==UserScript==
 // @name         TaskBoardEnhancer
 // @namespace    http://roqvist.com
-// @version      0.8
+// @version      1.1
 // @description  Marks blocked nodes with a beautiful red background color, hide blocked but allows change on hoover. Selector for hiding work items of specific states
 // @author       Robert, Dan
 // @match        https://*/tfs/*
 // @match        https://*.visualstudio.com/*
+// @match        https://dev.azure.com/*
 // @grant        none
 // ==/UserScript==
 
 // set up observer to make changes when dom changed
-MutationObserver = window.MutationObserver || window.WebKitMutationsObserver;
+var $ = window.jQuery;
+var MutationObserver = window.MutationObserver || window.WebKitMutationsObserver;
 
 function insertCssRule(selector,rules,contxt) {
     var context=contxt||document,stylesheet;
@@ -32,12 +34,12 @@ function insertCssRule(selector,rules,contxt) {
                 stylesheet.addRule(selector[i],rules);
             }
         } else {
-            stylesheet.insertRule(selector.join(',') + '{' + rules + '}', stylesheet.cssRules.length);  
+            stylesheet.insertRule(selector.join(',') + '{' + rules + '}', stylesheet.cssRules.length);
         }
     }
 }
 
-observer = new MutationObserver(function(mutations, observer) {
+var observer = new MutationObserver(function(mutations, observer) {
     Runner();
     updateHide();
 });
@@ -45,14 +47,44 @@ observer = new MutationObserver(function(mutations, observer) {
 function isTaskBoard(){
     return $("#taskboard").length;
 }
+
+function isAgileBoard() {
+    return $(".agile-board").length;
+}
+function isDevOpsSprint(){
+    return $(".sprint-view-container").length;
+}
+var initDone=false;
+var noOfRetries=5;
 // animate after a few seconds, slow ass rendering...
 $(document).ready(function() {
-    //only do this on the taskboard
-    if(isTaskBoard()){
+    init();
+});
+function init(){
+    if(isTaskBoard() || isAgileBoard()){
         setTimeout(Setup, 1500);
         addToolbar();
+        initDone=true;
+    } else if(isDevOpsSprint()){
+        addToolbarDevOps();
+        initDone=true;
     }
-});
+    noOfRetries--;
+    if(noOfRetries && !initDone){
+        console.log("Retrying init "+noOfRetries+" tries left");
+        setTimeout(init,500);
+    } else{
+        console.log("init done completed:"+initDone);
+    }
+}
+function addToolbarDevOps(){
+    var primaryCommands = $(".ms-CommandBar-primaryCommands");
+    var hideOption=localStorage.getItem("mw_hide_option");
+    var hideShowOption = localStorage.getItem("mw_hideShow_option");
+    primaryCommands.append('<div class="ms-CommandBarItem vss-PivotBar--commandBar-item"><div><select id="hideShow_option">'+renderOption("Hide",hideShowOption)+renderOption("Show",hideShowOption)+'</select>:<select id="hide_option">'+renderOption("None",hideOption)+renderOption("Done",hideOption)+renderOption("Reviewed,Done",hideOption)+'</select></div></div>');
+    $("select#hide_option").change(updateHide);
+    $("select#hideShow_option").change(updateHide);
+}
 function addToolbar(){
     insertCssRule([".mw-toolbar"],"display:table;height:34px;float:left");
     insertCssRule([".mw-toolbar div"],"display:table-cell;vertical-align:middle");
@@ -60,15 +92,16 @@ function addToolbar(){
     var views = toolbarRow.find(".views");
     var hideOption=localStorage.getItem("mw_hide_option");
     var hideShowOption = localStorage.getItem("mw_hideShow_option");
-    
+
     views.after("<div class=\"mw-toolbar\"><div><select id=\"hideShow_option\">"+renderOption("Hide",hideShowOption)+renderOption("Show",hideShowOption)+"</select>:<select id=\"hide_option\">"+renderOption("None",hideOption)+renderOption("Done",hideOption)+renderOption("Reviewed,Done",hideOption)+"</select></div></div>");
     $("select#hide_option").change(updateHide);
     $("select#hideShow_option").change(updateHide);
 }
 function renderOption(name, currentValue){
     var attributes="";
-    if(currentValue && currentValue.toLowerCase()==name.toLowerCase())
+    if(currentValue && currentValue.toLowerCase()==name.toLowerCase()) {
         attributes=" selected";
+    }
     return "<option"+attributes+">"+name+"</option>";
 }
 function updateHide(){
@@ -127,8 +160,8 @@ function Setup(){
 }
 // find and colorize nodes
 function Runner () {
-    tiles = $(".tbTileContent").each(function(i) {
-        $elementToChange = $(this);
+    var tiles = $(".tbTileContent").each(function(i) {
+        var $elementToChange = $(this);
         $(this).find("[field='Microsoft.VSTS.CMMI.Blocked']").find(".field-inner-element").each(function (j) {
             if($(this).text() == "Yes") {
                 $elementToChange.css('background', '#FF8080').css('-webkit-transition', 'background 0.5s').css('-moz-transition', 'background 0.5s').css('-o-transition', 'background 0.5s').css('transition', 'background 0.5s');
@@ -138,6 +171,25 @@ function Runner () {
         });
         $(this).find("[field='Microsoft.VSTS.CMMI.Blocked']").each(function(j){
             //$(this).hide();
+        });
+    });
+
+    // colorize tags ending with "main"
+    var boardTiles = $(".board-tile-content").each(function(i) {
+        var $elementToChange = $(this);
+        $(this).find("span.tag-box").each(function (j) {
+            if($(this).text().endsWith(" main")) {
+                $elementToChange.css('background', 'radial-gradient(circle closest-side at 60% 43%, #b03 26%, rgba(187,0,51,0) 27%), radial-gradient(circle closest-side at 40% 43%, #b03 26%, rgba(187,0,51,0) 27%), radial-gradient(circle closest-side at 40% 22%, #d35 45%, rgba(221,51,85,0) 46%), radial-gradient(circle closest-side at 60% 22%, #d35 45%, rgba(221,51,85,0) 46%), radial-gradient(circle closest-side at 50% 35%, #d35 30%, rgba(221,51,85,0) 31%), radial-gradient(circle closest-side at 60% 43%, #b03 26%, rgba(187,0,51,0) 27%) 50px 50px, radial-gradient(circle closest-side at 40% 43%, #b03 26%, rgba(187,0,51,0) 27%) 50px 50px, radial-gradient(circle closest-side at 40% 22%, #d35 45%, rgba(221,51,85,0) 46%) 50px 50px, radial-gradient(circle closest-side at 60% 22%, #d35 45%, rgba(221,51,85,0) 46%) 50px 50px, radial-gradient(circle closest-side at 50% 35%, #d35 30%, rgba(221,51,85,0) 31%) 50px 50px').css('background-color', '#b03').css('background-size', '100px 100px');
+                $elementToChange.css('-webkit-transition', 'background 0.5s').css('-moz-transition', 'background 0.5s').css('-o-transition', 'background 0.5s').css('transition', 'background 0.5s');
+
+                // white text
+                $elementToChange.css('color', '#FFF');
+                $elementToChange.find('.clickable-title').css('color', '#FFF');
+                $elementToChange.find('.identity-picker-resolved-name').css('color', '#FFF');
+                $elementToChange.find('.effort').css('color', '#FFF');
+                $elementToChange.find('.additional-field').find('.field-label').css('color', '#FFF');
+                $elementToChange.find('.additional-field').find('.field-inner-element').css('color', '#FFF');
+            }
         });
     });
 
