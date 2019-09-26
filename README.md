@@ -14,6 +14,9 @@ To be able to see the Blocked tasks in the TaskBoard in red, make sure that the 
 
 ## Changelog
 
+### 1.3.1
+* Added filter choice "InReview,Reviewed,Done"
+
 ### v1.2
 Added support for dev.azure.com sprint dashboard
 
